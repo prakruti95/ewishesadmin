@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:ewishesadmin/adminfront/AdminFront.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import '../../../constants.dart';
 
@@ -106,8 +107,8 @@ class _Items extends State<Items>{
                           //Navigator.pop(context);
                           Navigator.of(ctx).pop();
                           //Navigator.of(context).pop();
-                          //deleteCategoryImages(list_[index]['id']);
-                          //Fluttertoast.showToast(msg: "Category Deleted Successfully",toastLength: Toast.LENGTH_LONG,timeInSecForIosWeb: 1);
+                            deleteCategoryImages(list_[index]['id']);
+                            Fluttertoast.showToast(msg: "Category Deleted Successfully",toastLength: Toast.LENGTH_LONG,timeInSecForIosWeb: 1);
                           //Navigator.push(context,MaterialPageRoute(builder: (context) => AdminHome()));
 
                         },
@@ -132,5 +133,13 @@ class _Items extends State<Items>{
         );
       },
     );
+  }
+
+  void deleteCategoryImages(id)
+  {
+    var url = "https://prakrutitech.xyz/FlutterProject/category_delete.php";
+    http.post(Uri.parse(url),body: {
+      'data': id,
+    });
   }
 }
