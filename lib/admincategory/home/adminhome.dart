@@ -1,10 +1,11 @@
 
 import 'dart:convert';
-import 'package:ewishesadmin/adminfront/AdminFront.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import '../../../constants.dart';
+import '../../adminfront/AdminFront.dart';
 
 
 
@@ -15,7 +16,8 @@ class Home extends StatefulWidget{
   }
 }
 
-class AdminHomePage extends State<Home> {
+class AdminHomePage extends State<Home>
+{
   Future<List> viewCategoryData() async{
     final responce = await http.get(Uri.parse("https://prakrutitech.xyz/FlutterProject/category_view.php"));
     return jsonDecode(responce.body);
@@ -49,8 +51,7 @@ class AdminHomePage extends State<Home> {
   }
 }
 
-class Items extends StatefulWidget
-{
+class Items extends StatefulWidget {
   List list;
   Items({required this.list});
 
@@ -70,7 +71,34 @@ class _Items extends State<Items>{
 
   var update_category = TextEditingController();
 
+  //PickedFile _imageFile;
+  //final String uploadUrl = "https://amisha1299.000webhostapp.com/Ewishes/upload_category_main_image_update.php";
+  final ImagePicker _picker = ImagePicker();
 
+
+  void deleteCategory(var id)
+  {
+    var url = "https://prakrutitech.xyz/FlutterProject/category_delete.php";
+    http.post(Uri.parse(url),body: {
+      'data': id,
+    });
+  }
+
+  void deleteCategoryImages(var id){
+    var url = "https://prakrutitech.xyz/FlutterProject/category_images_delete.php";
+    http.post(Uri.parse(url),body: {
+      'data': id,
+    });
+  }
+  //
+  void updateCategoryName(var id)
+  {
+    var url = "https://prakrutitech.xyz/FlutterProject/category_update.php";
+    http.post(Uri.parse(url),body: {
+      'id': id,
+      'category_name': update_category.text.toString(),
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +112,10 @@ class _Items extends State<Items>{
           shadowColor: kBrown,
           elevation: 3,
           child: ListTile(
-
+            onTap: ()
+            {
+              //Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context)=>AdminCategory(index: list_[index]['id'],category_name: list_[index]['category_name'])));
+            },
             leading: Icon(Icons.list,color: kBrown,),
             trailing: InkWell(
               onTap: (){
@@ -103,12 +134,12 @@ class _Items extends State<Items>{
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          //deleteCategory(list_[index]['id']);
+                          deleteCategory(list_[index]['id']);
                           //Navigator.pop(context);
                           Navigator.of(ctx).pop();
                           //Navigator.of(context).pop();
-                            deleteCategoryImages(list_[index]['id']);
-                            Fluttertoast.showToast(msg: "Category Deleted Successfully",toastLength: Toast.LENGTH_LONG,timeInSecForIosWeb: 1);
+                          deleteCategoryImages(list_[index]['id']);
+                          //Fluttertoast.showToast(msg: "Category Deleted Successfully",toastLength: Toast.LENGTH_LONG,timeInSecForIosWeb: 1);
                           //Navigator.push(context,MaterialPageRoute(builder: (context) => AdminHome()));
 
                         },
@@ -126,20 +157,82 @@ class _Items extends State<Items>{
                   width: size.width*55/100,
                   child: Text("${list_[index]['category_name']}".toUpperCase(),style: TextStyle(color: kDarkBrown ,fontStyle: FontStyle.italic,fontSize: 15)),
                 ),
-
+                InkWell(
+                  onTap: (){
+                    update_category.text = list_[index]['category_name'];
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: kWhite,
+                        title: Row(children: [Icon(Icons.update, color: kBrown,),Text("\tUpdate Category",style: TextStyle(color: kBrown))],),
+                        content: Container(
+                          height: size.height*14/100,
+                          child: Column(
+                            children: [
+                              TextField(
+                                controller: update_category,
+                                decoration: InputDecoration(
+                                  hintText: "Input Category Name",
+                                ),
+                              ),
+                              SizedBox(height: size.height*1/100),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  minWidth: double.infinity,
+                                ),
+                                child: TextButton(
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: kBrown,
+                                    padding: const EdgeInsets.all(kPaddingM),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4.0),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    //_pickImage(list_[index]['id']);
+                                  },
+                                  child: Text("Update Image".toUpperCase(),
+                                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: kLightGold,fontStyle: FontStyle.italic),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: <Widget>[
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                            },
+                            child: Text("Cancel",style: TextStyle(color: kBrown)),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              if(!update_category.text.isEmpty){
+                                updateCategoryName(list_[index]['id']);
+                                Fluttertoast.showToast(msg: "Category Updated Successfully",toastLength: Toast.LENGTH_LONG,timeInSecForIosWeb: 1);
+                                Navigator.of(ctx).pop();
+                                //Navigator.of(context).pop();
+                              }
+                              else{
+                                if(update_category.text.isEmpty){
+                                  Fluttertoast.showToast(msg: "Please Input Category Name",toastLength: Toast.LENGTH_LONG,timeInSecForIosWeb: 1);
+                                }
+                              }
+                            },
+                            child: Text("Update",style: TextStyle(color: kBrown)),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: Icon(Icons.edit,size: 25,color: kBrown),
+                ),
               ],
             ),
           ),
         );
       },
     );
-  }
-
-  void deleteCategoryImages(id)
-  {
-    var url = "https://prakrutitech.xyz/FlutterProject/category_delete.php";
-    http.post(Uri.parse(url),body: {
-      'data': id,
-    });
   }
 }
